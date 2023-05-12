@@ -2,6 +2,7 @@ package com.yang.reggie.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -17,6 +18,8 @@ public class Employee implements Serializable {
 
     private String name;
 
+    @JsonIgnore
+    @TableField(value = "password", select = false)
     private String password;
 
     private String phone;
