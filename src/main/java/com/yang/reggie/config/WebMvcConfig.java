@@ -28,7 +28,6 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
     /**
      * @Description: 扩展mvc框架的消息转换器,主要的目的是将long转换成string，以便完整的记录long型的id
      * @param converters
-     * @Author: CoderMast <a href="https://www.codermast.com/">...</a>
      */
     @Override
     protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
