@@ -12,6 +12,7 @@ import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -72,6 +73,14 @@ public class EmployeeController {
         return R.success("退出成功");
     }
 
+
+    /**
+     * @Description: 查询员工信息
+     * @param page
+     * @param pageSize
+     * @param name 员工姓名
+     * @return
+     */
     @GetMapping("/page")
     public  R<Page<Employee>> queryEmployee(int page, int pageSize, String name) {
 
@@ -92,5 +101,34 @@ public class EmployeeController {
         employeeService.page(pageInfo,queryWrapper);
 
         return R.success(pageInfo);
+    }
+
+
+    /**
+     * @Description 新增员工
+     * @param request
+     * @param employee
+     * @return
+     */
+    @PostMapping
+    public R<String> save(HttpServletRequest request, @RequestBody Employee employee) {
+        log.info("新增员工....{}", employee);
+
+        // 为员工设置默认的登录密码，为123456
+        employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
+        // 设置创建和登录时间
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+
+        // 获取当前登录用户信息
+        // Session中存储的是登录用户的id信息
+        long curUserId = (long) request.getSession().getAttribute("employee");
+
+        // 设置创建人和修改人的id
+        employee.setCreateUser(curUserId);
+        employee.setUpdateUser(curUserId);
+
+        employeeService.save(employee);
+        return R.success("新增员工成功");
     }
 }
