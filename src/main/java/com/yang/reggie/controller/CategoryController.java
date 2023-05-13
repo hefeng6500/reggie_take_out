@@ -86,7 +86,18 @@ public class CategoryController {
    */
   @DeleteMapping
   public R<String> deleteCategory(HttpServletRequest request, Long id) {
-    categoryService.removeById(id);
+
+    // Mybatis Plus 提供的 removeById
+    // categoryService.removeById(id);
+
+    try {
+      categoryService.remove(id);
+    }catch (Exception exception) {
+      System.out.println("exception: " + exception.getMessage());
+      String msg = exception.getMessage();
+
+      return R.error(msg);
+    }
 
     log.info("删除菜品分类信息：" + id);
 
