@@ -158,6 +158,11 @@ public class EmployeeController {
   public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
     log.info("更新员工信息，员工 id => " + employee.getId() + "姓名 => " + employee.getUsername());
 
+    Long id = (Long) request.getSession().getAttribute("employee");
+
+    employee.setUpdateTime(LocalDateTime.now());
+    employee.setUpdateUser(id);
+
     employeeService.updateById(employee);
 
     return R.success("更新成功！");
