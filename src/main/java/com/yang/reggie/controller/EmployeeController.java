@@ -139,16 +139,16 @@ public class EmployeeController {
     // 为员工设置默认的登录密码，为123456
     employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
     // 设置创建和登录时间
-    employee.setCreateTime(LocalDateTime.now());
-    employee.setUpdateTime(LocalDateTime.now());
-
-    // 获取当前登录用户信息
-    // Session中存储的是登录用户的id信息
-    long curUserId = (long) request.getSession().getAttribute("employee");
-
-    // 设置创建人和修改人的id
-    employee.setCreateUser(curUserId);
-    employee.setUpdateUser(curUserId);
+    // employee.setCreateTime(LocalDateTime.now());
+    // employee.setUpdateTime(LocalDateTime.now());
+    //
+    // // 获取当前登录用户信息
+    // // Session中存储的是登录用户的id信息
+    // long curUserId = (long) request.getSession().getAttribute("employee");
+    //
+    // // 设置创建人和修改人的id
+    // employee.setCreateUser(curUserId);
+    // employee.setUpdateUser(curUserId);
 
     employeeService.save(employee);
     return R.success("新增员工成功");
@@ -158,10 +158,10 @@ public class EmployeeController {
   public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
     log.info("更新员工信息，员工 id => " + employee.getId() + "姓名 => " + employee.getUsername());
 
-    Long id = (Long) request.getSession().getAttribute("employee");
-
-    employee.setUpdateTime(LocalDateTime.now());
-    employee.setUpdateUser(id);
+    // Long id = (Long) request.getSession().getAttribute("employee");
+    //
+    // employee.setUpdateTime(LocalDateTime.now());
+    // employee.setUpdateUser(id);
 
     employeeService.updateById(employee);
 
