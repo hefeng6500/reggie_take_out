@@ -20,7 +20,7 @@ const deleCategory = (ids) => {
   return $axios({
     url: '/category',
     method: 'delete',
-    params: { ids }
+    params: { id: ids }
   })
 }
 
