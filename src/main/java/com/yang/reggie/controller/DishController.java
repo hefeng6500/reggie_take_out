@@ -194,14 +194,21 @@ public class DishController {
    * @return
    */
   @PostMapping("/status/{status}")
-  public R<Boolean> toggleStatus(HttpServletRequest httpServletRequest, @PathVariable String status, @Param("ids") String ids) {
-    Dish dish = dishService.getById(ids);
+  public R<String> toggleStatus(HttpServletRequest httpServletRequest, @PathVariable Integer status, @RequestParam List<Long> ids) {
+    LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
-    dish.setStatus(Integer.valueOf(status));
+    lambdaQueryWrapper.in(ids != null, Dish::getId, ids);
 
-    dishService.updateById(dish);
+    List<Dish> list = dishService.list(lambdaQueryWrapper);
 
-    return R.success(true);
+    for (Dish dish : list) {
+      if (dish != null) {
+        dish.setStatus(status);
+        dishService.updateById(dish);
+      }
+    }
+
+    return R.success(status == 1 ? "启售成功" : "停售成功");
   }
 }
 
