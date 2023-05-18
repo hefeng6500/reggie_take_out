@@ -88,9 +88,7 @@
             <artifactId>aliyun-java-sdk-dysmsapi</artifactId>
             <version>2.1.0</version>
         </dependency>
-
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -100,5 +98,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

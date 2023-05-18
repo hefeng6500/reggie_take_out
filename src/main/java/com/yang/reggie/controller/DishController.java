@@ -11,11 +11,14 @@ import com.yang.reggie.service.CategoryService;
 import com.yang.reggie.service.DishFlavorService;
 import com.yang.reggie.service.DishService;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang.StringUtils;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,7 @@ public class DishController {
 
   @Autowired
   private CategoryService categoryService;
+  private int newState;
 
   /**
    * 新增菜品
@@ -133,6 +137,7 @@ public class DishController {
 
   /**
    * 根据条件查询对应的菜品数据
+   *
    * @param dish
    * @return
    */
@@ -181,6 +186,29 @@ public class DishController {
     }).collect(Collectors.toList());
 
     return R.success(dishDtos);
+  }
+
+  /**
+   * 起售停售状态切换
+   *
+   * @return
+   */
+  @PostMapping("/status/{status}")
+  public R<String> toggleStatus(HttpServletRequest httpServletRequest, @PathVariable Integer status, @RequestParam List<Long> ids) {
+    LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+    lambdaQueryWrapper.in(ids != null, Dish::getId, ids);
+
+    List<Dish> list = dishService.list(lambdaQueryWrapper);
+
+    for (Dish dish : list) {
+      if (dish != null) {
+        dish.setStatus(status);
+        dishService.updateById(dish);
+      }
+    }
+
+    return R.success(status == 1 ? "启售成功" : "停售成功");
   }
 }
 
