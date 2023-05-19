@@ -210,5 +210,36 @@ public class DishController {
 
     return R.success(status == 1 ? "启售成功" : "停售成功");
   }
+
+
+  /**
+   * 删除菜品
+   *
+   * @param httpServletRequest
+   * @param ids
+   * @return
+   */
+  @DeleteMapping
+  public R<String> deleteDish(HttpServletRequest httpServletRequest, @RequestParam List<Long> ids) {
+    LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+    lambdaQueryWrapper.in(ids != null, Dish::getId, ids);
+
+    List<Dish> list = dishService.list(lambdaQueryWrapper);
+
+    for (Dish dish : list) {
+      if (dish != null) {
+        int status = dish.getStatus();
+
+        if (status == 1) {
+          // 启售中
+          return R.error(list.size() == 1 ? "删除失败！该商品正在启售中，不可删除！" : "删除失败！存在启售商品！");
+        }
+        dishService.removeByIds(ids);
+      }
+    }
+
+    return R.success("删除成功！");
+  }
 }
 
