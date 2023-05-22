@@ -16,10 +16,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +31,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/dish")
 @Slf4j
 public class DishController {
+
+  @Autowired
+  private RedisTemplate redisTemplate;
   @Autowired
   private DishService dishService;
 
@@ -159,6 +164,19 @@ public class DishController {
   @GetMapping("/list")
   public R<List<DishDto>> list(Dish dish) {
     log.info("dish:{}", dish);
+
+    // 先从缓存中获取缓存数据
+    List<DishDto> dishDtos = null;
+
+    // 动态构造 key
+    String key = "dish_" + dish.getCategoryId() + "_" + dish.getStatus();
+
+    dishDtos = (List<DishDto>) redisTemplate.opsForValue().get(key);
+
+    if(dishDtos != null) {
+      return R.success(dishDtos);
+    }
+
     // 条件构造器
     LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
     queryWrapper.like(StringUtils.isNotEmpty(dish.getName()), Dish::getName, dish.getName());
@@ -171,7 +189,7 @@ public class DishController {
     // 查询对应菜品的分类和口味信息
     List<Dish> dishs = dishService.list(queryWrapper);
 
-    List<DishDto> dishDtos = dishs.stream().map(item -> {
+    dishDtos = dishs.stream().map(item -> {
       DishDto dishDto = new DishDto();
       BeanUtils.copyProperties(item, dishDto);
       Category category = categoryService.getById(item.getCategoryId());
@@ -184,6 +202,8 @@ public class DishController {
       dishDto.setFlavors(dishFlavorService.list(wrapper));
       return dishDto;
     }).collect(Collectors.toList());
+
+    redisTemplate.opsForValue().set(key, dishDtos, 60, TimeUnit.MINUTES);
 
     return R.success(dishDtos);
   }
