@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,15 @@ public class DishController {
   @PostMapping
   public R<String> save(@RequestBody DishDto dishDto) {
     log.info(dishDto.toString());
+
+    // 清理缓存所有菜品数据，不推荐
+    // Set keys = redisTemplate.keys("dish_*");
+    // redisTemplate.delete(keys);
+
+    // 清理某个分类下面的缓存,推荐，精确清理
+    String key = "dish_" + dishDto.getCategoryId() + "_1";
+
+    redisTemplate.delete(key);
 
     dishService.saveWithFlavor(dishDto);
 
@@ -133,6 +143,9 @@ public class DishController {
   @PutMapping
   public R<String> update(@RequestBody DishDto dishDto) {
     log.info(dishDto.toString());
+
+    String key = "dish_" + dishDto.getCategoryId() + "_" + dishDto.getStatus();
+    redisTemplate.delete(key);
 
     dishService.updateWithFlavor(dishDto);
 
@@ -215,6 +228,8 @@ public class DishController {
    */
   @PostMapping("/status/{status}")
   public R<String> toggleStatus(HttpServletRequest httpServletRequest, @PathVariable Integer status, @RequestParam List<Long> ids) {
+
+
     LambdaQueryWrapper<Dish> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 
     lambdaQueryWrapper.in(ids != null, Dish::getId, ids);
@@ -224,6 +239,10 @@ public class DishController {
     for (Dish dish : list) {
       if (dish != null) {
         dish.setStatus(status);
+
+        String key = "dish_" + dish.getCategoryId() + "_" + dish.getStatus();
+        redisTemplate.delete(key);
+
         dishService.updateById(dish);
       }
     }
@@ -250,6 +269,9 @@ public class DishController {
     for (Dish dish : list) {
       if (dish != null) {
         int status = dish.getStatus();
+
+        String key = "dish_" + dish.getCategoryId() + "_" + dish.getStatus();
+        redisTemplate.delete(key);
 
         if (status == 1) {
           // 启售中
